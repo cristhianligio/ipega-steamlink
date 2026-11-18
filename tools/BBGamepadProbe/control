@@ -1,0 +1,9 @@
+Package: org.ipega-steamlink.bbgamepadprobe
+Name: BBGamepadProbe
+Version: 0.1.0
+Architecture: iphoneos-arm64
+Description: Diagnostic (read-only) tweak for backboardd: logs the PG-9083 analog HID values. Phase 2 research only.
+Maintainer: ipega-steamlink contributors
+Author: ipega-steamlink contributors
+Section: Tweaks
+Depends: mobilesubstrate

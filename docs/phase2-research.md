@@ -131,3 +131,22 @@ Tres piezas:
 3. **Ampliación de `ICadeSteamLink`**: además del modo iCade (fase 1), lee ese estado compartido y mueve los ejes analógicos del joystick virtual de SDL.
 
 **Riesgo:** `backboardd` es un proceso crítico de la interfaz. Un fallo del tweak puede dejar la pantalla sin responder y obligar a un respring o a reiniciar (y, al ser semi-tethered, a relanzar palera1n). El tweak debe ser muy defensivo, y conviene probar primero una versión que solo registre, sin publicar nada.
+
+### Inyectar un cliente HID en procesos del sistema NO es viable (2026-11-17)
+
+Se probó un tweak de solo lectura (`tools/BBGamepadProbe`, luego `tools/SBGamepadProbe`) que abría el PG-9083 con `IOHIDManager` (modo compartido, no seize) en una cola propia, con arranque diferido y un interruptor de apagado (`/var/mobile/Documents/gpprobe.off`).
+
+- **En `backboardd`:** `IOHIDManagerOpen` devolvió OK (el registro lo confirma), pero el proceso **se colgó** unos segundos después → pantalla negra → Safe Mode.
+- **En `SpringBoard`:** **bucle de crasheos** nada más hacer respring → Safe Mode repetido. Se recuperó con el interruptor de apagado (`touch …/gpprobe.off`, sin sudo) y `dpkg -r`.
+
+**Conclusión:** aunque `IOHIDManagerOpen` tiene éxito dentro de un proceso autorizado, **abrir el dispositivo HID desde backboardd o SpringBoard desestabiliza el proceso** (probablemente una protección del sistema —sandbox/watchdog— que termina el host, o una reentrada con el propio pipeline HID). **No es un camino seguro** y puso el iPad en Safe Mode dos veces. Se descarta inyectar un cliente `IOHIDManager` en procesos del sistema.
+
+## Camino recomendado (más seguro) para retomar la fase 2
+
+En vez de leer el HID a mano, conviene hacer que **iPadOS exponga el mando por el framework GameController**, que es lo que Steam Link/SDL ya saben leer de forma nativa. Pistas:
+
+- En `bluetoothd`, además de `EnableGamepads`, la decisión de "mando soportado" consultaba el *feature flag* **`GameControllerBlockListRemoval`** (conjunto `BluetoothFeatures`). Si ese flag hace que el mando aparezca en *Configuración → General → Mando de juegos*, SDL lo vería **sin ningún tweak de lectura** y sin riesgo para el sistema.
+- Los *feature flags* de Apple se controlan con plists en `/Library/Preferences/FeatureFlags/` (o herramientas de `feature_flags`). Es un cambio de preferencia, **reversible**, que **no** inyecta código en ningún proceso crítico.
+- **Experimento seguro a futuro:** activar `GameControllerBlockListRemoval` (+ `EnableGamepads`), reemparejar en posición 1 y comprobar si aparece "Mando de juegos" y si Steam Link lo detecta. Riesgo: a lo sumo que no funcione; no desestabiliza el sistema como la inyección.
+
+Mientras tanto, la **fase 1 (iCade) queda como la solución estable y enviable** del proyecto.

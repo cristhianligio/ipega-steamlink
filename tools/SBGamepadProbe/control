@@ -1,0 +1,9 @@
+Package: org.ipega-steamlink.sbgamepadprobe
+Name: SBGamepadProbe
+Version: 0.1.0
+Architecture: iphoneos-arm64
+Description: Diagnostic (read-only) tweak for SpringBoard: logs the PG-9083 analog HID values. Phase 2 research only. Kill-switch: touch /var/mobile/Documents/gpprobe.off
+Maintainer: ipega-steamlink contributors
+Author: ipega-steamlink contributors
+Section: Tweaks
+Depends: mobilesubstrate
