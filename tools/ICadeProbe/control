@@ -1,0 +1,9 @@
+Package: org.ipega-steamlink.icadeprobe
+Name: ICadeProbe
+Version: 0.3.0
+Architecture: iphoneos-arm64
+Description: Diagnostic tweak: logs the keyboard and controller events that SDL3 delivers to Steam Link.
+Maintainer: ipega-steamlink contributors
+Author: ipega-steamlink contributors
+Section: Tweaks
+Depends: mobilesubstrate

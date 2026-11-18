@@ -1,0 +1,9 @@
+Package: org.ipega-steamlink.icadesteamlink
+Name: ICadeSteamLink
+Version: 0.2.0
+Architecture: iphoneos-arm64
+Description: Turns an iCade-mode controller (iPega PG-9083) into a virtual gamepad inside Steam Link.
+Maintainer: ipega-steamlink contributors
+Author: ipega-steamlink contributors
+Section: Tweaks
+Depends: mobilesubstrate

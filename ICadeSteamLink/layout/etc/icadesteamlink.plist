@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- false = el tweak no hace nada (Steam Link funciona como sin tweak) -->
+	<key>Enabled</key>
+	<true/>
+	<!-- true = la cruceta también mueve el stick izquierdo -->
+	<key>DpadToLeftStick</key>
+	<false/>
+	<!-- true = escribe un registro en <contenedor de Steam Link>/tmp/ICadeSteamLink.log -->
+	<key>DebugLog</key>
+	<false/>
+</dict>
+</plist>
