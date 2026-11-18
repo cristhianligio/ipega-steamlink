@@ -8,7 +8,7 @@ El control tiene un interruptor de 4 posiciones en el lado izquierdo. Cada posic
 
 | N.º | Posición | Icono | Modo (manual) | Nombre Bluetooth | LED | Resultado en iPadOS |
 |---|---|---|---|---|---|---|
-| 1 | Totalmente a la izquierda | Android | Android V3 | _pendiente_ | _pendiente_ | _pendiente_ |
+| 1 | Totalmente a la izquierda | Android | Android V3 | `PG-9083` | LED 1 | Se empareja ("Conectado"), pero **iPadOS no crea ningún dispositivo de entrada**. Su descriptor sí incluye un **gamepad analógico** (ver abajo). |
 | 2 | Segunda desde la izquierda | Android | No Function | n/a | n/a | n/a |
 | 3 | Bajo la manzana | Apple | iOS | _pendiente_ | _pendiente_ | _pendiente_ |
 | 4 | Totalmente a la derecha | Mando | Android & PC | `PG-9083` | LED 4 | **Teclado iCade** (ver abajo) |
@@ -71,4 +71,31 @@ Descriptor en bruto:
 
 ```
 05010906a101850175019508050719e029e715002501810295017508810395057501050819012905910295017503910395067508150026ff000507190029ff8100c0050c0901a1018502150025017501950a09cd09b609b509e909ea09b809950a23020a240209408102950175068103c0
+```
+
+## Posición 1: "Android V3" → gamepad HID (ignorado por iPadOS)
+
+- Se empareja y aparece como **Conectado** en Ajustes, pero **no** aparece ningún `IOHIDDevice` en el IORegistry. Tampoco escribe en Notas, no mueve el puntero y no aparece *Ajustes → General → Mando de juegos*.
+- El descriptor HID se obtuvo de la ficha que guarda `bluetoothd` en `…/SystemGroup/<uuid>/Library/Preferences/com.apple.MobileBluetooth.devices.plist` (clave `HIDDescriptor`, 208 bytes).
+- **IDs HID:** `HIDVendorID` 0x1337, `HIDProductID` 0x0204. **Device ID** (registro PnP): 0x1949 / 0x0402, el mismo que en la posición 4.
+
+Descriptor decodificado:
+
+```
+Report ID 2: Consumer Control (10 bits): igual que en la posición 4
+Report ID 6: Ratón: 3 botones, X/Y relativos (−127..127), rueda (−127..127)
+Report ID 7: Gamepad (página 0x01, uso 0x05)
+  X, Y, Z, Rz            4 × 8 bits, 0..255   → dos sticks analógicos
+  Hat switch             4 bits, 0..7 (8 direcciones) + 4 bits de relleno
+  Botones 1–16           16 × 1 bit
+  Accelerator, Brake     2 × 8 bits, 0..255   → gatillos analógicos (página 0x02)
+  Relleno                8 bits
+```
+
+**Conclusión para la fase 2:** en esta posición el control envía exactamente lo que necesitamos: dos sticks y dos gatillos analógicos, cruceta de 8 direcciones y 16 botones. Pero iPadOS no lo convierte en un dispositivo HID utilizable. **Hipótesis, pendiente de comprobar:** `bluetoothd` recibe los reportes pero no crea el `IOHIDUserDevice`, así que nunca llegan a `backboardd`. Si se confirma, el tweak de la fase 2 tendrá que trabajar en `bluetoothd`, no en `backboardd` como se planteó al principio.
+
+Descriptor en bruto:
+
+```
+050c0901a1018502150025017501950a09cd09b609b509e909ea09b809950a23020a240209408102950175068103c005010902a10185060901a100050919012903150025017501950381027505950181010501093009311581257f75089502810609381581257f750895018106c0c005010905a10185070901a1000930093109320935150026ff00750895048102c00939150025073500463b016514750495018142750495018101050919012910150025017501951081020502150026ff0009c409c5950275088102750895018101c0
 ```
