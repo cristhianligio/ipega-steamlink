@@ -80,3 +80,23 @@ rm /var/mobile/Library/Preferences/com.apple.MobileBluetooth.debug.plist && sudo
 ¿Steam Link (SDL3) detecta este gamepad? Dos escenarios:
 - **Sí** → la fase 2 sería casi trivial: la preferencia + el mapeo que ya tenemos.
 - **No** (lo más probable, al no aparecer en GameController) → hace falta un tweak que lea los reportes HID del Game Pad y los pase al joystick virtual de SDL que ya creamos en la fase 1. Ese tweak podría vivir en la propia Steam Link (si puede abrir el IOHIDDevice) o en `backboardd`/`bluetoothd`.
+
+### Prueba en Steam Link: SDL NO ve el mando
+
+Con la preferencia activa, el control en posición 1 y el diagnóstico ICadeProbe 0.3.0, se abrió Steam Link. En el registro:
+
+- SDL inicializa los subsistemas de joystick y gamepad (`SDL_InitSubSystem(0x200)` y `(0x2000)`).
+- **No hay ningún evento `JOYSTICK CONECTADO` ni `GAMEPAD CONECTADO`.**
+- Al mover sticks y pulsar botones, **no llega ningún evento** a SDL, ni a UIKit, ni a GameController. Steam Link no reacciona.
+
+**Conclusión confirmada:** la preferencia `EnableGamepads` hace que el mando exista como `IOHIDDevice` de sistema, pero **no lo expone por GameController**, que es la única vía por la que SDL3 lee mandos en iOS. Las apps no pueden abrir ese `IOHIDDevice` por el sandbox. Por tanto, Steam Link no lo ve y hace falta un tweak puente.
+
+## Opciones para la fase 2 (puente HID analógico → joystick virtual de SDL)
+
+El mando virtual de SDL dentro de Steam Link (de la fase 1) sirve tal cual; lo único que falta es **alimentarlo con los reportes HID analógicos**. Dónde leerlos:
+
+1. **Tweak en `backboardd`** (el intermediario de HID del sistema): usar `IOHIDEventSystemClient`/`IOHIDManager` para recibir los eventos del Game Pad y reenviarlos a Steam Link (memoria compartida + Darwin notifications, o un socket local). backboardd sí tiene permisos de HID. Es el enfoque más prometedor.
+2. **Tweak en la propia Steam Link** que intente abrir el `IOHIDDevice` con `IOHIDManager`. Probablemente lo impida el sandbox de la app, aunque sea un tweak inyectado. A comprobar.
+3. **Tweak en `bluetoothd`**: leer los reportes antes de que se "pierdan". Más invasivo y arriesgado (proceso crítico).
+
+Decisión pendiente. El enfoque 1 (backboardd) es el candidato principal; antes hay que comprobar que backboardd recibe de verdad los eventos de este Game Pad y que se pueden leer con `IOHIDEventSystemClient`.
