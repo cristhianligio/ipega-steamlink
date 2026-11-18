@@ -10,10 +10,10 @@ El control tiene un interruptor de 4 posiciones en el lado izquierdo. Cada posic
 |---|---|---|---|---|---|---|
 | 1 | Totalmente a la izquierda | Android | Android V3 | `PG-9083` | LED 1 | Se empareja ("Conectado"), pero **iPadOS no crea ningún dispositivo de entrada**. Su descriptor sí incluye un **gamepad analógico** (ver abajo). |
 | 2 | Segunda desde la izquierda | Android | No Function | n/a | n/a | n/a |
-| 3 | Bajo la manzana | Apple | iOS | _pendiente_ | _pendiente_ | _pendiente_ |
+| 3 | Bajo la manzana | Apple | iOS | `Newgamepad N1` | LED 3 | Teclado + teclas multimedia; **no escribe nada** en Notas (ver abajo) |
 | 4 | Totalmente a la derecha | Mando | Android & PC | `PG-9083` | LED 4 | **Teclado iCade** (ver abajo) |
 
-> En otra posición, que todavía no sabemos cuál es, el control aparecía como `Newgamepad N1` y no escribía nada en Notas.
+> El nombre `Newgamepad N1`, que se veía al principio del proyecto, corresponde a la posición 3 (iOS).
 
 ## Posición 4: "Android & PC" → teclado iCade
 
@@ -99,3 +99,26 @@ Descriptor en bruto:
 ```
 050c0901a1018502150025017501950a09cd09b609b509e909ea09b809950a23020a240209408102950175068103c005010902a10185060901a100050919012903150025017501950381027505950181010501093009311581257f75089502810609381581257f750895018106c0c005010905a10185070901a1000930093109320935150026ff00750895048102c00939150025073500463b016514750495018142750495018101050919012910150025017501951081020502150026ff0009c409c5950275088102750895018101c0
 ```
+
+## Posición 3: "iOS" → teclado que no escribe
+
+- iPadOS crea un `IOHIDUserDevice` llamado `Newgamepad N1`.
+- **Device ID:** 0x2015 / 0x8001 (8213 / 32769). **IDs HID:** 0x05F0 / 0x0180 (según la ficha de `bluetoothd`).
+- **Usos:** teclado (0x01/0x06) y Consumer Control (0x0C/0x01). No tiene ejes.
+- El descriptor es casi igual al de la posición 4, pero admite **20 teclas simultáneas** en lugar de 6.
+- Al pulsar los botones no se escribe nada en Notas, ni aparece el puntero ni *Mando de juegos*. Probablemente es el antiguo modo de "simulación de toques" de la app ShootingPlus V3, que dejó de funcionar con iOS 13.4.
+- **No sirve para este proyecto:** es digital y no envía teclas utilizables.
+
+Descriptor en bruto:
+
+```
+05010906a101850175019508050719e029e715002501810295017508810395057501050819012905910295017503910395147508150026ff000507190029ff8100c0050c0901a1018502150025017501950a09cd09b609b509e909ea09b809950a23020a240209408102950175068103c0
+```
+
+## Resumen
+
+| Posición | Qué ve iPadOS | ¿Analógico? | Uso en el proyecto |
+|---|---|---|---|
+| 1 · Android V3 | **Nada** (no crea dispositivo HID) | **Sí**: 2 sticks y 2 gatillos | **Fase 2** |
+| 3 · iOS | Teclado que no escribe | No | Ninguno |
+| 4 · Android & PC | Teclado iCade | No | **Fase 1** (funciona) |
