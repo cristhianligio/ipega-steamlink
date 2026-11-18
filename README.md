@@ -20,6 +20,7 @@ Usa el control **iPega PG-9083** (el modelo original, **sin** la "S" al final) c
 10. [Limitaciones](#limitaciones)
 11. [Hoja de ruta](#hoja-de-ruta)
 12. [Para desarrolladores](#para-desarrolladores)
+13. [Licencia](#licencia)
 
 ---
 
@@ -359,3 +360,11 @@ Steam Link 1.4.5 usa **SDL3** como framework dinámico sin cifrar. El tweak:
 3. traduce cada tecla con `SDL_SetJoystickVirtualButton` / `SDL_SetJoystickVirtualAxis`.
 
 Los detalles están en [docs/architecture-phase1.md](docs/architecture-phase1.md).
+
+---
+
+## Licencia
+
+[MIT](LICENSE): puedes usar, modificar y redistribuir este código libremente, siempre que conserves el aviso de copyright y de licencia.
+
+Este proyecto no está afiliado a Valve, a iPega ni a Apple. Steam y Steam Link son marcas de Valve Corporation.
