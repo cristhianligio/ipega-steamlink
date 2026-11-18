@@ -100,3 +100,34 @@ El mando virtual de SDL dentro de Steam Link (de la fase 1) sirve tal cual; lo �
 3. **Tweak en `bluetoothd`**: leer los reportes antes de que se "pierdan". Más invasivo y arriesgado (proceso crítico).
 
 Decisión pendiente. El enfoque 1 (backboardd) es el candidato principal; antes hay que comprobar que backboardd recibe de verdad los eventos de este Game Pad y que se pueden leer con `IOHIDEventSystemClient`.
+
+### El acceso directo al HID está bloqueado para binarios sueltos
+
+Se compiló una herramienta CLI (`tools/hidprobe`) con IOHIDManager y los entitlements `com.apple.hid.manager.user-access-device` y `com.apple.hid.system.user-access-service`, firmada con ldid. Resultado:
+
+- Como `mobile`: `IOHIDManagerOpen` devuelve `0xe00002e2` (`kIOReturnNotPermitted`).
+- Como `root` (sudo): **el mismo error**.
+
+Es decir, en este jailbreak (palera1n rootless) un binario suelto no obtiene acceso al HID aunque lleve los entitlements y sea root: AMFI/sandbox no confía esos entitlements en un binario firmado con ldid. La herramienta de Apple `hidutil` sí funciona (tiene firma y entitlements legítimos), pero solo ofrece `list`/`dump`/`property`, no un monitor en vivo. `hidutil list` confirma que el PG-9083 (VendorID 0x1949) está en el sistema de eventos HID.
+
+**Conclusión de arquitectura:** el puente de la fase 2 **no puede ser un proceso propio**; tiene que inyectarse en un proceso de Apple que ya tenga acceso a HID. El candidato natural es **`backboardd`** (el intermediario del sistema de eventos HID; un tweak ahí puede usar `IOHIDEventSystemClient`/`IOHIDManager` sin el problema de entitlements). Alternativa: `SpringBoard`.
+
+## Arquitectura de la fase 2 (confirmada)
+
+```
+PG-9083 (pos. 1, analógico)
+   │  (bluetoothd lo acepta porque EnableGamepads=true)
+   ▼
+Sistema de eventos HID  ──►  [TWEAK en backboardd]  ──►  estado normalizado
+                                                          (memoria compartida + Darwin notification)
+                                                                 │
+                                   [TWEAK en Steam Link] ◄───────┘
+                                   escribe en el joystick virtual de SDL (ya existe de la fase 1)
+```
+
+Tres piezas:
+1. **Preferencia `EnableGamepads`** instalada de forma persistente (para que el mando exista como gamepad).
+2. **Tweak lector en `backboardd`**: lee los ejes/botones del PG-9083 y publica el estado por memoria compartida + `notify_post`.
+3. **Ampliación de `ICadeSteamLink`**: además del modo iCade (fase 1), lee ese estado compartido y mueve los ejes analógicos del joystick virtual de SDL.
+
+**Riesgo:** `backboardd` es un proceso crítico de la interfaz. Un fallo del tweak puede dejar la pantalla sin responder y obligar a un respring o a reiniciar (y, al ser semi-tethered, a relanzar palera1n). El tweak debe ser muy defensivo, y conviene probar primero una versión que solo registre, sin publicar nada.
