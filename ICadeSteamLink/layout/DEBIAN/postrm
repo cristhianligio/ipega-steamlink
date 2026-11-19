@@ -1,0 +1,11 @@
+#!/bin/sh
+# postrm — se ejecuta al desinstalar. Revierte la preferencia EnableGamepads
+# para dejar el Bluetooth del sistema en su estado original.
+
+if [ "$1" = "remove" ] || [ "$1" = "purge" ] || [ "$1" = "abort-install" ]; then
+	rm -f /var/mobile/Library/Preferences/com.apple.MobileBluetooth.debug.plist
+	killall -9 cfprefsd 2>/dev/null || true
+	killall -9 bluetoothd 2>/dev/null || true
+fi
+
+exit 0

@@ -18,7 +18,7 @@
 #import <stddef.h>
 #import <substrate.h>
 
-#define ICSL_VERSION @"0.4.0"
+#define ICSL_VERSION @"0.4.1"
 #define ICSL_CONFIG_PATH @"/var/jb/etc/icadesteamlink.plist"
 #define PG9083_VENDOR_ID 0x1949
 

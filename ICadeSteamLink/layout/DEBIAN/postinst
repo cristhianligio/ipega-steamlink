@@ -1,0 +1,38 @@
+#!/bin/sh
+# postinst — se ejecuta tras instalar el paquete (como root).
+# Activa la preferencia EnableGamepads para que iPadOS acepte el PG-9083 como
+# Game Pad analógico en la posición 1 (Android V3). Sin esto, la posición 1 no
+# crea ningún dispositivo y el modo analógico no funciona.
+
+set -e
+PREF=/var/mobile/Library/Preferences/com.apple.MobileBluetooth.debug.plist
+
+cat > "$PREF" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnableGamepads</key>
+	<true/>
+	<key>HID</key>
+	<dict>
+		<key>EnableGamepads</key>
+		<true/>
+	</dict>
+</dict>
+</plist>
+PLIST
+
+# La preferencia pertenece al usuario mobile (quien ejecuta bluetoothd).
+chown mobile:mobile "$PREF" 2>/dev/null || true
+chmod 644 "$PREF" 2>/dev/null || true
+
+# Recarga las preferencias y reinicia Bluetooth para que surta efecto.
+killall -9 cfprefsd 2>/dev/null || true
+killall -9 bluetoothd 2>/dev/null || true
+
+echo "ICadeSteamLink: soporte de mando activado."
+echo "  -> Pon el interruptor del control en la posicion 1 (Android V3, robot a la izquierda)"
+echo "     y vuelve a emparejarlo en Ajustes > Bluetooth para tener sticks analogicos."
+
+exit 0
