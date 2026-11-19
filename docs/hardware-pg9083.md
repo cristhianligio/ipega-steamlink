@@ -122,3 +122,29 @@ Descriptor en bruto:
 | 1 · Android V3 | **Nada** (no crea dispositivo HID) | **Sí**: 2 sticks y 2 gatillos | **Fase 2** |
 | 3 · iOS | Teclado que no escribe | No | Ninguno |
 | 4 · Android & PC | Teclado iCade | No | **Fase 1** (funciona) |
+
+## Posición 1 con EnableGamepads: mapa completo del Game Pad (fase 2)
+
+Leído desde DENTRO de Steam Link con IOHIDManager (orden correcto: SetDispatchQueue → Open → Activate). `IOHIDManagerOpen` devolvió 0x0 (la app SÍ puede leer el HID; no hace falta tocar procesos del sistema). Valores analógicos 0..255, centro 128.
+
+| Físico | Uso HID | Eje/Botón SDL | Notas |
+|---|---|---|---|
+| Stick izq. H | GenericDesktop X (0x30) | eje LEFTX | 0..255, centro 128 |
+| Stick izq. V | GenericDesktop Y (0x31) | eje LEFTY | 0=arriba, 255=abajo |
+| Stick der. H | GenericDesktop Z (0x32) | eje RIGHTX | |
+| Stick der. V | GenericDesktop Rz (0x35) | eje RIGHTY | |
+| Cruceta | GenericDesktop Hat (0x39) | dpad | 0=N,2=E,4=S,6=O (8 dir), 15=centro |
+| A | Botón 1 | SOUTH | |
+| B | Botón 2 | EAST | |
+| X | Botón 4 | WEST | (botón 3 inexistente) |
+| Y | Botón 5 | NORTH | (botón 6 inexistente) |
+| L1 | Botón 7 | LEFT_SHOULDER | |
+| R1 | Botón 8 | RIGHT_SHOULDER | |
+| L2 | Botón 9 + Brake (0x02/0xC5) | eje LEFT_TRIGGER | analógico 0..255 |
+| R2 | Botón 10 + Accelerator (0x02/0xC4) | eje RIGHT_TRIGGER | analógico 0..255 |
+| SELECT | Botón 11 | BACK | |
+| START | Botón 12 | START | |
+| L3 | Botón 14 | LEFT_STICK | (botón 13 inexistente) |
+| R3 | Botón 15 | RIGHT_STICK | |
+
+Es un mando moderno completo. Clave: Steam Link (la app) puede abrir el HID por sí misma, así que la fase 2 vive entera dentro de ICadeSteamLink, sin backboardd ni SpringBoard. Requisito previo: la preferencia EnableGamepads debe estar activa para que el mando exista en la posición 1.

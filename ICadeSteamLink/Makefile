@@ -10,6 +10,6 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = ICadeSteamLink
 ICadeSteamLink_FILES = Tweak.m
 ICadeSteamLink_CFLAGS = -fobjc-arc -Wall -Wextra -Wno-unused-parameter
-ICadeSteamLink_FRAMEWORKS = Foundation UIKit GameController
+ICadeSteamLink_FRAMEWORKS = Foundation UIKit GameController CoreFoundation IOKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk

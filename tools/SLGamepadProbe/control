@@ -1,0 +1,9 @@
+Package: org.ipega-steamlink.slgamepadprobe
+Name: SLGamepadProbe
+Version: 0.1.0
+Architecture: iphoneos-arm64
+Description: Diagnostic (read-only) tweak hosted in Steam Link: tests whether the app can read the PG-9083 HID directly. Phase 2 research only.
+Maintainer: ipega-steamlink contributors
+Author: ipega-steamlink contributors
+Section: Tweaks
+Depends: mobilesubstrate
